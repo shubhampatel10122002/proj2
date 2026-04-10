@@ -1,0 +1,19 @@
+{
+  "name": "decentralized-moderation-shared",
+  "version": "1.0.0",
+  "description": "Shared utilities for Decentralized AI Content Moderation System",
+  "main": "config.js",
+  "dependencies": {
+    "@azure/storage-queue": "^12.17.0",
+    "@chainsafe/libp2p-gossipsub": "^13.0.0",
+    "@chainsafe/libp2p-noise": "^15.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.0",
+    "@libp2p/bootstrap": "^10.0.0",
+    "@libp2p/tcp": "^9.0.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "form-data": "^4.0.0",
+    "libp2p": "^1.4.0",
+    "uint8arrays": "^5.0.3"
+  }
+}

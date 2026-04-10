@@ -1,0 +1,27 @@
+{
+  "name": "ai-processing-node",
+  "version": "1.0.0",
+  "description": "AI Processing Node — AWS Rekognition + Google Perspective API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev":   "nodemon server.js"
+  },
+  "dependencies": {
+    "@azure/storage-queue": "^12.17.0",
+    "@chainsafe/libp2p-gossipsub": "^13.0.0",
+    "@chainsafe/libp2p-noise": "^15.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.0",
+    "@libp2p/tcp": "^9.0.0",
+    "aws-sdk": "^2.1509.0",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "libp2p": "^1.4.0",
+    "uint8arrays": "^5.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

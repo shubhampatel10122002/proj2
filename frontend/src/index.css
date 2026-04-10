@@ -1,0 +1,32 @@
+/* index.css — Global styles for Decentralized Moderation UI */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f1117;
+  --surface:   #1a1d27;
+  --card:      #21263a;
+  --border:    #2e3352;
+  --accent:    #4f8ef7;
+  --accent2:   #7c5cbf;
+  --safe:      #22c55e;
+  --harmful:   #ef4444;
+  --warn:      #f59e0b;
+  --text:      #e8ecf4;
+  --muted:     #8892aa;
+  --radius:    10px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
