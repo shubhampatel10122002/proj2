@@ -2,4 +2,8 @@ node_modules/
 .env
 *.env
 .DS_Store
-{frontend/
+frontend/node_modules/
+ai-processing-node/node_modules/
+human-review-node/node_modules/
+ingestion-node/node_modules/
+storage-node/node_modules/
