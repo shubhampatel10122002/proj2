@@ -3,7 +3,7 @@
 
 ---
 
-## 📋 Project Overview
+##  Project Overview
 
 A fully decentralized content moderation pipeline that uses **three cloud providers**, **peer-to-peer networking**, and **human-in-the-loop** decision logic to evaluate user-submitted text and images.
 
@@ -18,7 +18,7 @@ A fully decentralized content moderation pipeline that uses **three cloud provid
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -65,7 +65,7 @@ A fully decentralized content moderation pipeline that uses **three cloud provid
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 decentralized-moderation/
@@ -114,7 +114,7 @@ decentralized-moderation/
 
 ---
 
-## ⚙️ Port Assignments
+##  Port Assignments
 
 | Service | HTTP Port | libp2p TCP Port |
 |---------|-----------|-----------------|
@@ -126,7 +126,7 @@ decentralized-moderation/
 
 ---
 
-## 🔑 Required API Keys / Services
+##  Required API Keys / Services
 
 ### 1. AWS Rekognition (Image Moderation)
 1. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
@@ -154,7 +154,7 @@ decentralized-moderation/
 
 ---
 
-## 🚀 Local Setup Instructions
+## Local Setup Instructions
 
 ### Prerequisites
 - Node.js >= 18.x
@@ -227,7 +227,7 @@ cd frontend && npm start
 
 ---
 
-## 🧪 API Reference
+##  API Reference
 
 ### Ingestion Node (port 3001)
 
@@ -269,7 +269,7 @@ cd frontend && npm start
 
 ---
 
-## 🧪 Sample Test Payloads
+##  Sample Test Payloads
 
 ### Safe text
 ```bash
@@ -300,7 +300,7 @@ curl -X POST http://localhost:3001/submit/image \
 
 ---
 
-## 📦 Sample IPFS Stored Record
+##  Sample IPFS Stored Record
 
 This JSON is pinned to IPFS and retrievable by CID worldwide:
 
@@ -334,7 +334,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-## 🤖 Decision Logic (Human-in-the-Loop)
+##  Decision Logic (Human-in-the-Loop)
 
 ```
                         Content Submitted
@@ -365,7 +365,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-## 🌐 Why This Is Decentralized (Not Centralized)
+##  Why This Is Decentralized (Not Centralized)
 
 | Aspect | Centralized App | This System |
 |--------|----------------|-------------|
@@ -377,7 +377,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-## ☁️ Three PaaS Services from Three Different Clouds
+##  Three PaaS Services from Three Different Clouds
 
 1. **AWS Rekognition** (Amazon)
    - Managed ML vision API
@@ -396,7 +396,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-## 🔮 Future Work / Improvements
+##  Future Work / Improvements
 
 - [ ] Replace in-memory state with Redis for persistence
 - [ ] Add JWT authentication for the moderator dashboard
@@ -411,7 +411,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-## 👥 Architecture Roles Summary
+##  Architecture Roles Summary
 
 | Node | Port | Cloud Service | Role |
 |------|------|---------------|------|
