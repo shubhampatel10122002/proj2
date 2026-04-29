@@ -36,11 +36,10 @@ module.exports = {
       'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze',
   },
 
-  // IPFS / Infura
+  // IPFS / Pinata
   ipfs: {
-    projectId:     process.env.INFURA_IPFS_PROJECT_ID,
-    projectSecret: process.env.INFURA_IPFS_PROJECT_SECRET,
-    endpoint:      'https://ipfs.infura.io:5001',
+    pinataJwt: process.env.PINATA_JWT,
+    gateway:   'https://gateway.pinata.cloud/ipfs',
   },
 
   // Human-in-the-loop confidence thresholds

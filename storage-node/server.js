@@ -107,7 +107,7 @@ async function storeDecision(task) {
     decisionSource: record.decisionSource,
     contentType:    record.contentType,
     storedAt:       record.storedAt,
-    ipfsUrl:        `https://infura-ipfs.io/ipfs/${cid}`,
+    ipfsUrl:        ipfsClient.gatewayUrl(cid),
     record,
   };
 
@@ -183,7 +183,7 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`\n✅ Storage Node running on http://localhost:${PORT}`);
     console.log('   Polling Azure Queue: final-decisions (every 3s)');
-    console.log('   IPFS pinning via Infura\n');
+    console.log('   IPFS pinning via Pinata\n');
   });
 
   setTimeout(pollDecisionQueue, 2000);

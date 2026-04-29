@@ -12,9 +12,9 @@ A fully decentralized content moderation pipeline that uses **three cloud provid
 | Image Moderation | AWS Rekognition | ☁️ Amazon Web Services |
 | Text Toxicity | Google Perspective API | ☁️ Google Cloud |
 | Task Routing | Azure Queue Storage | ☁️ Microsoft Azure |
-| Decentralized Storage | IPFS via Infura | 🌐 Decentralized |
-| P2P Mesh | libp2p GossipSub | 🌐 Peer-to-Peer |
-| Frontend | React | 💻 Local |
+| Decentralized Storage | IPFS via Pinata | 🌐 Decentralized |
+| P2P Mesh | libp2p GossipSub + mDNS | 🌐 Peer-to-Peer |
+| Frontend | React (CRA) | 💻 Local |
 
 ---
 
@@ -146,11 +146,15 @@ decentralized-moderation/
 3. Go to Access Keys → copy Connection String
 4. Cost: ~$0.004 per 10,000 operations (essentially free for demos)
 
-### 4. Infura IPFS (Decentralized Storage)
-1. Go to [infura.io](https://infura.io) → Create account
-2. Create a new project → Select IPFS
-3. Copy Project ID and Project Secret
-4. Cost: Free tier includes 5GB storage
+### 4. Pinata IPFS (Decentralized Storage)
+1. Go to [app.pinata.cloud](https://app.pinata.cloud) → Create account
+2. Developers → API Keys → New Key
+3. Enable the `pinFileToIPFS` permission, name it, and create
+4. Copy the **JWT** shown once (you won't see it again)
+5. Cost: Free tier includes 1 GB / 500 files — plenty for this demo
+
+> Note: Infura's free IPFS tier was discontinued in 2024. Pinata is the
+> drop-in replacement we use here.
 
 ---
 
@@ -371,9 +375,34 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 |--------|----------------|-------------|
 | Single point of failure | ❌ Yes | ✅ No — 4 independent nodes |
 | Data storage | ❌ One database | ✅ IPFS (content-addressed, global) |
-| Communication | ❌ HTTP only | ✅ libp2p P2P mesh + Azure Queue |
+| Communication | ❌ HTTP only | ✅ libp2p GossipSub mesh (mDNS-discovered) + Azure Queue |
 | Node dependency | ❌ All in one process | ✅ Each node runs independently |
 | Audit trail | ❌ Internal DB only | ✅ Immutable IPFS records |
+
+---
+
+##  P2P Mesh (libp2p)
+
+Implemented in `shared/p2pNode.js`. Each backend node runs a real libp2p
+host with:
+
+- **TCP transport** on ports 10001–10004
+- **Noise** encryption + **Yamux** stream multiplexing
+- **mDNS** local peer discovery (no central rendezvous server)
+- **GossipSub** pubsub on the topic `moderation-events`
+
+Events broadcast to all peers:
+
+| Event | Published by | Consumed by |
+|---|---|---|
+| `content-submitted` | Ingestion | Others (logging) |
+| `review-required` | Human Review | Others (logging) |
+| `moderation-complete` | AI Processor / Human Review | Ingestion (status update) |
+| `record-stored` | Storage | Others (logging) |
+
+When all four nodes are running, watch the console — you'll see
+`[libp2p] Discovered peer:` and `Connected to peer:` lines as the mesh
+forms over mDNS.
 
 ---
 
@@ -400,7 +429,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 - [ ] Replace in-memory state with Redis for persistence
 - [ ] Add JWT authentication for the moderator dashboard
-- [ ] Implement DHT-based peer discovery (full libp2p DHT)
+- [ ] Add Kademlia DHT for cross-network peer discovery (mDNS works for localhost only)
 - [ ] WebSocket real-time updates in the frontend
 - [ ] Multi-language text support via Perspective API
 - [ ] Batch image processing with S3 triggers
@@ -418,5 +447,5 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 | Ingestion | 3001 | Azure Queue (write) | Content intake |
 | AI Processing | 3002 | AWS + Google APIs | Automated analysis |
 | Human Review | 3003 | Azure Queue (read/write) | Gray-zone decisions |
-| Storage | 3004 | IPFS / Infura | Immutable audit trail |
+| Storage | 3004 | IPFS / Pinata | Immutable audit trail |
 | Frontend | 3000 | — | UI for all roles |
