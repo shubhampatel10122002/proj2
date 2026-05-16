@@ -1,7 +1,7 @@
 /**
  * shared/azureQueue.js
  * Wrapper around Azure Storage Queue SDK v12.
- * Used by ingestion, AI processing, and storage nodes.
+ * Used by ingestion, AI processing, human review, and storage nodes.
  */
 const { QueueServiceClient } = require('@azure/storage-queue');
 const config = require('./config');
@@ -31,7 +31,7 @@ async function ensureQueue(queueName) {
  * Messages are base64-encoded JSON.
  */
 async function sendMessage(queueName, payload) {
-  const client = await ensureQueue(queueName);
+  const client  = await ensureQueue(queueName);
   const encoded = Buffer.from(JSON.stringify(payload)).toString('base64');
   const result  = await client.sendMessage(encoded);
   console.log(`[AzureQueue] Sent to "${queueName}":`, payload.contentId || payload.type);
@@ -50,7 +50,6 @@ async function receiveMessages(queueName, maxMessages = 5) {
   for (const msg of response.receivedMessageItems) {
     const decoded = Buffer.from(msg.messageText, 'base64').toString('utf-8');
     const payload = JSON.parse(decoded);
-    // Delete immediately after reading (at-least-once semantics)
     await client.deleteMessage(msg.messageId, msg.popReceipt);
     results.push(payload);
   }

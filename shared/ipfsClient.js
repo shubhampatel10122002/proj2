@@ -2,12 +2,12 @@
  * shared/ipfsClient.js
  * Stores moderation decision records on IPFS via Pinata's pinning API.
  *
- * Auth: Pinata JWT (preferred — single env var). Generate at
+ * Auth: Pinata JWT (single env var, PINATA_JWT). Generate at
  *   https://app.pinata.cloud/developers/api-keys
  */
-const axios   = require('axios');
+const axios    = require('axios');
 const FormData = require('form-data');
-const config  = require('./config');
+const config   = require('./config');
 
 const PINATA_API_BASE = 'https://api.pinata.cloud';
 const PINATA_GATEWAY  = 'https://gateway.pinata.cloud/ipfs';
@@ -21,11 +21,7 @@ function authHeader() {
 }
 
 /**
- * Pin a JSON object to IPFS via Pinata.
- * Returns the CID (Content Identifier) string.
- *
- * @param {object} jsonRecord  The moderation decision record
- * @returns {Promise<string>}  IPFS CID
+ * Pin a JSON object to IPFS via Pinata. Returns the CID string.
  */
 async function storeRecord(jsonRecord) {
   const jsonStr = JSON.stringify(jsonRecord, null, 2);
@@ -35,13 +31,12 @@ async function storeRecord(jsonRecord) {
     contentType: 'application/json',
   });
 
-  // Pinata metadata (helps you find records in the dashboard)
   form.append('pinataMetadata', JSON.stringify({
     name: `moderation-${jsonRecord.contentId || 'record'}`,
     keyvalues: {
-      contentId:   jsonRecord.contentId || '',
+      contentId:   jsonRecord.contentId   || '',
       contentType: jsonRecord.contentType || '',
-      decision:    jsonRecord.decision || '',
+      decision:    jsonRecord.decision    || '',
     },
   }));
 
@@ -60,7 +55,7 @@ async function storeRecord(jsonRecord) {
 }
 
 /**
- * Retrieve a record from IPFS by CID, trying Pinata gateway first
+ * Retrieve a record from IPFS by CID, trying Pinata's gateway first
  * then falling back to a public gateway.
  */
 async function fetchRecord(cid) {
@@ -68,9 +63,7 @@ async function fetchRecord(cid) {
     try {
       const response = await axios.get(`${base}/${cid}`, { timeout: 8000 });
       return response.data;
-    } catch (err) {
-      // try next gateway
-    }
+    } catch (_) { /* try next gateway */ }
   }
   throw new Error(`Could not fetch CID ${cid} from any gateway`);
 }

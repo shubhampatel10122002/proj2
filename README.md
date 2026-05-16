@@ -1,24 +1,27 @@
 # ⬡ Decentralized AI Content Moderation System
-### Academic Prototype — Cloud Computing + Distributed Systems
+### Cloud Computing + Distributed Systems — Academic Project
 
 ---
 
-##  Project Overview
+## Project Overview
 
-A fully decentralized content moderation pipeline that uses **three cloud providers**, **peer-to-peer networking**, and **human-in-the-loop** decision logic to evaluate user-submitted text and images.
+A decentralized content-moderation pipeline that combines **three cloud
+PaaS services**, a **peer-to-peer network** of cooperating nodes, and a
+**human-in-the-loop** decision layer to evaluate user-submitted text
+and images.
 
 | Component | Technology | Cloud / Protocol |
-|-----------|-----------|-----------------|
+|---|---|---|
 | Image Moderation | AWS Rekognition | ☁️ Amazon Web Services |
 | Text Toxicity | Google Perspective API | ☁️ Google Cloud |
 | Task Routing | Azure Queue Storage | ☁️ Microsoft Azure |
 | Decentralized Storage | IPFS via Pinata | 🌐 Decentralized |
 | P2P Mesh | libp2p GossipSub + mDNS | 🌐 Peer-to-Peer |
-| Frontend | React (CRA) | 💻 Local |
+| Frontend | React | 💻 Local |
 
 ---
 
-##  System Architecture
+## System Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -54,7 +57,7 @@ A fully decentralized content moderation pipeline that uses **three cloud provid
              ▼                    ▼                             │
 ┌───────────────────┐  ┌──────────────────────┐                │
 │ Storage Node(3004)│  │Human Review Node(3003)│                │
-│ - IPFS via Infura │  │ - Dashboard API       │                │
+│ - IPFS via Pinata │  │ - Dashboard API       │                │
 │ - Pin JSON record │  │ - Accept decisions    │                │
 │ - Return CID      │  │ - Forward to storage  │                │
 └───────────────────┘  └──────────────────────┘                │
@@ -105,19 +108,20 @@ decentralized-moderation/
 │   ├── config.js                # Central config + thresholds
 │   ├── azureQueue.js            # Azure Queue SDK wrapper
 │   ├── p2pNode.js               # libp2p factory + pubsub helpers
-│   ├── ipfsClient.js            # IPFS / Infura pinning client
+│   ├── ipfsClient.js            # IPFS / Pinata pinning client
 │   └── package.json
 │
 ├── .env.example                 # Template for all env variables
+├── package.json                 # Root launcher (npm start runs all 5 services)
 └── README.md
 ```
 
 ---
 
-##  Port Assignments
+## Port Assignments
 
 | Service | HTTP Port | libp2p TCP Port |
-|---------|-----------|-----------------|
+|---|---|---|
 | React Frontend | **3000** | — |
 | Ingestion Node | **3001** | 10001 |
 | AI Processing Node | **3002** | 10002 |
@@ -126,43 +130,76 @@ decentralized-moderation/
 
 ---
 
-##  Required API Keys / Services
+## Required Cloud Credentials
 
 ### 1. AWS Rekognition (Image Moderation)
-1. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
-2. Create a new IAM User → Attach policy: `AmazonRekognitionFullAccess`
-3. Generate Access Key ID and Secret Access Key
-4. Cost: Free tier includes 5,000 image units/month
+1. AWS Console → IAM → Users → Create user
+2. Attach policy: `AmazonRekognitionFullAccess`
+3. Security credentials → Create access key
+4. Free tier: 5,000 image units/month for 12 months
 
 ### 2. Google Perspective API (Text Toxicity)
-1. Go to [Perspective API](https://developers.perspectiveapi.com/s/docs-get-started)
-2. Enable the API in Google Cloud Console
-3. Create an API Key in Credentials section
-4. Cost: Free for research/academic use
+1. https://developers.perspectiveapi.com/s/docs-get-started — apply for access
+2. Google Cloud Console → enable the Perspective Comment Analyzer API
+3. APIs & Services → Credentials → Create API key
+4. Free for research and academic use
 
 ### 3. Azure Queue Storage (Task Routing)
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Create a Storage Account (LRS, Hot tier)
-3. Go to Access Keys → copy Connection String
-4. Cost: ~$0.004 per 10,000 operations (essentially free for demos)
+1. Azure Portal → Create a Storage Account (LRS, Hot tier)
+2. Security + networking → Access keys → copy Connection string
+3. Cost: ~$0.004 per 10,000 operations (effectively free for demo volume)
 
 ### 4. Pinata IPFS (Decentralized Storage)
-1. Go to [app.pinata.cloud](https://app.pinata.cloud) → Create account
-2. Developers → API Keys → New Key
-3. Enable the `pinFileToIPFS` permission, name it, and create
-4. Copy the **JWT** shown once (you won't see it again)
-5. Cost: Free tier includes 1 GB / 500 files — plenty for this demo
+1. https://app.pinata.cloud → Create account
+2. Developers → API Keys → New Key (enable `pinFileToIPFS` scope)
+3. Copy the JWT shown once at creation time
+4. Free tier: 1 GB storage / 500 files
 
-> Note: Infura's free IPFS tier was discontinued in 2024. Pinata is the
-> drop-in replacement we use here.
+---
+
+## P2P Mesh (libp2p)
+
+Implemented in `shared/p2pNode.js`. Each backend node runs a real
+libp2p host with:
+
+- **TCP** transport on ports 10001–10004
+- **Noise** encryption + **Yamux** stream multiplexing
+- **mDNS** local peer discovery (no central rendezvous server)
+- **GossipSub** pubsub on the topic `moderation-events`
+
+Events published on the mesh:
+
+| Event | Published by | Consumed by |
+|---|---|---|
+| `content-submitted` | Ingestion | All peers (logging / observability) |
+| `review-required` | Human Review | All peers |
+| `moderation-complete` | AI Processor / Human Review | Ingestion (status update) |
+| `record-stored` | Storage | All peers |
+
+When all four backend nodes are running, each console prints
+`[libp2p][...] Discovered peer:` and `Connected to peer:` lines as the
+mesh forms over mDNS.
+
+---
+
+## Three PaaS Services from Three Different Clouds
+
+| Cloud | Service | Role |
+|---|---|---|
+| **Amazon AWS** | Rekognition | Managed ML vision API — image moderation |
+| **Google Cloud** | Perspective API | Managed NLP toxicity classifier — text moderation |
+| **Microsoft Azure** | Queue Storage | Managed message queue — reliable async coordination between nodes |
+
+Each is a fully managed PaaS service: no infrastructure to operate,
+pay-per-use pricing, accessible over HTTPS REST APIs.
 
 ---
 
 ## Local Setup Instructions
 
 ### Prerequisites
-- Node.js >= 18.x
-- npm >= 9.x
+- Node.js ≥ 20.x
+- npm ≥ 10.x
 - Git
 
 ### Step 1 — Clone and configure environment
@@ -171,72 +208,69 @@ decentralized-moderation/
 git clone <repo-url>
 cd decentralized-moderation
 
-# Copy .env.example to each node directory
+# Copy .env.example to each node and fill in your credentials
 cp .env.example ingestion-node/.env
 cp .env.example ai-processing-node/.env
 cp .env.example human-review-node/.env
 cp .env.example storage-node/.env
 
-# Edit EACH .env file and fill in your API keys
-nano ingestion-node/.env
+# Edit each .env file with your AWS / GCP / Azure / Pinata credentials
 ```
 
 ### Step 2 — Install dependencies
 
 ```bash
-# Shared utilities
-cd shared && npm install && cd ..
-
-# Each backend node
-cd ingestion-node    && npm install && cd ..
-cd ai-processing-node && npm install && cd ..
-cd human-review-node  && npm install && cd ..
-cd storage-node       && npm install && cd ..
-
-# React frontend
-cd frontend && npm install && cd ..
+npm install              # installs concurrently at the root
+npm run install:all      # installs shared/, all 4 nodes, and frontend
 ```
 
-### Step 3 — Start all services (5 terminals)
+### Step 3 — Start all services
+
+One command from the repo root:
+
+```bash
+npm start
+```
+
+This launches all 4 backend nodes plus the React frontend in a single
+terminal with colour-coded prefixed logs (via `concurrently`). Press
+`Ctrl+C` once to stop them all.
+
+If you prefer 5 separate terminals:
 
 **Terminal 1 — Ingestion Node**
 ```bash
-cd ingestion-node && npm start
-# → http://localhost:3001
+cd ingestion-node && npm start    # → http://localhost:3001
 ```
 
 **Terminal 2 — AI Processing Node**
 ```bash
-cd ai-processing-node && npm start
-# → http://localhost:3002
+cd ai-processing-node && npm start  # → http://localhost:3002
 ```
 
 **Terminal 3 — Human Review Node**
 ```bash
-cd human-review-node && npm start
-# → http://localhost:3003
+cd human-review-node && npm start   # → http://localhost:3003
 ```
 
 **Terminal 4 — Storage Node**
 ```bash
-cd storage-node && npm start
-# → http://localhost:3004
+cd storage-node && npm start        # → http://localhost:3004
 ```
 
 **Terminal 5 — React Frontend**
 ```bash
-cd frontend && npm start
-# → http://localhost:3000
+cd frontend && npm start            # → http://localhost:3000
 ```
 
 ---
 
-##  API Reference
+## API Reference
 
 ### Ingestion Node (port 3001)
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | POST | `/submit/text` | Submit text for moderation. Body: `{ text }` |
 | POST | `/submit/image` | Submit image (multipart). Field: `image` |
 | GET | `/status/:contentId` | Poll moderation result |
@@ -247,7 +281,7 @@ cd frontend && npm start
 ### AI Processing Node (port 3002)
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | POST | `/analyze/text` | Direct text analysis. Body: `{ text }` |
 | POST | `/analyze/image` | Direct image analysis. Body: `{ imageBase64 }` |
 | GET | `/health` | Health check |
@@ -255,8 +289,8 @@ cd frontend && npm start
 ### Human Review Node (port 3003)
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/pending` | Get items awaiting human review |
+|---|---|---|
+| GET | `/pending` | Items awaiting human review |
 | GET | `/pending/:id` | Full detail for one item |
 | POST | `/decide/:id` | Submit decision. Body: `{ decision, reviewerName }` |
 | GET | `/history` | Recently reviewed items |
@@ -265,7 +299,7 @@ cd frontend && npm start
 ### Storage Node (port 3004)
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | GET | `/records` | All IPFS-stored decisions |
 | GET | `/records/:id` | Record by contentId |
 | POST | `/store` | Direct store (testing) |
@@ -273,7 +307,7 @@ cd frontend && npm start
 
 ---
 
-##  Sample Test Payloads
+## Sample Test Payloads
 
 ### Safe text
 ```bash
@@ -282,21 +316,21 @@ curl -X POST http://localhost:3001/submit/text \
   -d '{"text": "Have a wonderful and productive day! I love learning about cloud computing."}'
 ```
 
-### Toxic text (should auto-reject or go to review)
+### Toxic text (auto-rejected)
 ```bash
 curl -X POST http://localhost:3001/submit/text \
   -H "Content-Type: application/json" \
   -d '{"text": "I hate you and everything you stand for. You are worthless garbage."}'
 ```
 
-### Gray-zone text (should go to human review)
+### Gray-zone text (routed to human review)
 ```bash
 curl -X POST http://localhost:3001/submit/text \
   -H "Content-Type: application/json" \
   -d '{"text": "This politician is an absolute idiot and should resign immediately."}'
 ```
 
-### Image (curl)
+### Image
 ```bash
 curl -X POST http://localhost:3001/submit/image \
   -F "image=@/path/to/your/image.jpg"
@@ -304,9 +338,10 @@ curl -X POST http://localhost:3001/submit/image \
 
 ---
 
-##  Sample IPFS Stored Record
+## Sample IPFS-Stored Record
 
-This JSON is pinned to IPFS and retrievable by CID worldwide:
+Each finalized decision is pinned to IPFS as a structured JSON
+document, retrievable globally by its CID:
 
 ```json
 {
@@ -338,7 +373,7 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 
 ---
 
-##  Decision Logic (Human-in-the-Loop)
+## Decision Logic (Human-in-the-Loop)
 
 ```
                         Content Submitted
@@ -362,90 +397,31 @@ This JSON is pinned to IPFS and retrievable by CID worldwide:
 ```
 
 | Score Range | Action | Source |
-|-------------|--------|--------|
+|---|---|---|
 | ≥ 0.85 | Auto-reject as Harmful | AI Autonomous |
 | 0.40 – 0.85 | Route to Human Review | Human-in-the-loop |
 | < 0.40 (text) / ≤ 0.15 (image) | Auto-approve as Safe | AI Autonomous |
 
 ---
 
-##  Why This Is Decentralized (Not Centralized)
+## Why This Is Decentralized
 
 | Aspect | Centralized App | This System |
-|--------|----------------|-------------|
+|---|---|---|
 | Single point of failure | ❌ Yes | ✅ No — 4 independent nodes |
 | Data storage | ❌ One database | ✅ IPFS (content-addressed, global) |
-| Communication | ❌ HTTP only | ✅ libp2p GossipSub mesh (mDNS-discovered) + Azure Queue |
+| Communication | ❌ HTTP only | ✅ libp2p GossipSub mesh + Azure Queue |
 | Node dependency | ❌ All in one process | ✅ Each node runs independently |
 | Audit trail | ❌ Internal DB only | ✅ Immutable IPFS records |
 
 ---
 
-##  P2P Mesh (libp2p)
-
-Implemented in `shared/p2pNode.js`. Each backend node runs a real libp2p
-host with:
-
-- **TCP transport** on ports 10001–10004
-- **Noise** encryption + **Yamux** stream multiplexing
-- **mDNS** local peer discovery (no central rendezvous server)
-- **GossipSub** pubsub on the topic `moderation-events`
-
-Events broadcast to all peers:
-
-| Event | Published by | Consumed by |
-|---|---|---|
-| `content-submitted` | Ingestion | Others (logging) |
-| `review-required` | Human Review | Others (logging) |
-| `moderation-complete` | AI Processor / Human Review | Ingestion (status update) |
-| `record-stored` | Storage | Others (logging) |
-
-When all four nodes are running, watch the console — you'll see
-`[libp2p] Discovered peer:` and `Connected to peer:` lines as the mesh
-forms over mDNS.
-
----
-
-##  Three PaaS Services from Three Different Clouds
-
-1. **AWS Rekognition** (Amazon)
-   - Managed ML vision API
-   - No infrastructure to manage
-   - Pay-per-image
-
-2. **Google Perspective API** (Google Cloud)
-   - Managed NLP toxicity detection
-   - Research-grade ML models
-   - REST API, no setup
-
-3. **Azure Queue Storage** (Microsoft Azure)
-   - Managed message queue PaaS
-   - Enables reliable async coordination
-   - Survives node restarts
-
----
-
-##  Future Work / Improvements
-
-- [ ] Replace in-memory state with Redis for persistence
-- [ ] Add JWT authentication for the moderator dashboard
-- [ ] Add Kademlia DHT for cross-network peer discovery (mDNS works for localhost only)
-- [ ] WebSocket real-time updates in the frontend
-- [ ] Multi-language text support via Perspective API
-- [ ] Batch image processing with S3 triggers
-- [ ] Docker Compose for one-command startup
-- [ ] Kubernetes Helm chart for cloud deployment
-- [ ] Dashboard analytics / moderation metrics
-- [ ] Appeal mechanism for users to contest decisions
-
----
-
-##  Architecture Roles Summary
+## Architecture Roles Summary
 
 | Node | Port | Cloud Service | Role |
-|------|------|---------------|------|
+|---|---|---|---|
 | Ingestion | 3001 | Azure Queue (write) | Content intake |
-| AI Processing | 3002 | AWS + Google APIs | Automated analysis |
+| AI Processing | 3002 | AWS Rekognition + Google Perspective | Automated analysis |
 | Human Review | 3003 | Azure Queue (read/write) | Gray-zone decisions |
 | Storage | 3004 | IPFS / Pinata | Immutable audit trail |
-| Frontend | 3000 | — | UI for all roles |
+| Frontend | 3000 | — | Submit, Moderator, and Audit UIs |

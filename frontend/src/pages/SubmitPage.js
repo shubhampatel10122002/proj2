@@ -60,19 +60,15 @@ const s = {
     borderRadius: '50%', animation: 'spin 0.7s linear infinite',
     marginRight: 6, verticalAlign: 'middle',
   },
-  recentTitle: {
-    fontSize: 15, fontWeight: 700, color: '#e8ecf4',
-    marginTop: '2rem', marginBottom: '0.75rem',
-  },
 };
 
 function StatusBadge({ status }) {
   const map = {
-    approved:       ['#22c55e', '✅ Approved'],
-    rejected:       ['#ef4444', '🚫 Rejected'],
+    approved:         ['#22c55e', '✅ Approved'],
+    rejected:         ['#ef4444', '🚫 Rejected'],
     'pending-review': ['#f59e0b', '⏳ Pending Review'],
-    queued:         ['#8892aa', '🕐 Queued'],
-    processing:     ['#4f8ef7', '⚙️ Processing'],
+    queued:           ['#8892aa', '🕐 Queued'],
+    processing:       ['#4f8ef7', '⚙️ Processing'],
   };
   const [color, label] = map[status] || ['#8892aa', status];
   return <span style={s.badge(color)}>{label}</span>;
@@ -88,6 +84,11 @@ function ResultCard({ result }) {
       {decision       && <div style={s.row}><span style={s.key}>Decision</span><span style={s.val}>{decision}</span></div>}
       {decisionSource && <div style={s.row}><span style={s.key}>Decided by</span><span style={s.val}>{decisionSource === 'AI' ? '🤖 AI Auto' : '👤 Human'}</span></div>}
       {aiScore != null && <div style={s.row}><span style={s.key}>AI Score</span><span style={s.val}>{(aiScore * 100).toFixed(1)}%</span></div>}
+      {status === 'pending-review' && (
+        <div style={{ marginTop: 8, fontSize: 12, color: '#f59e0b' }}>
+          → Awaiting a moderator. Open the <strong>Moderator</strong> tab to make the call.
+        </div>
+      )}
       {ipfsCid && (
         <div style={s.cid}>
           📦 IPFS CID: <a href={ipfsUrl} target="_blank" rel="noreferrer">{ipfsCid}</a>
@@ -175,9 +176,11 @@ export default function SubmitPage() {
           <button style={s.btn()} onClick={submitText} disabled={submitting || !text.trim()}>
             {submitting ? <><span style={s.spinner}/>Submitting…</> : '🚀 Submit for Moderation'}
           </button>
-          {polling && <p style={{ fontSize: 12, color: '#8892aa', marginTop: 8 }}>
-            <span style={s.spinner}/>Polling for result…
-          </p>}
+          {polling && !result?.status?.match(/approved|rejected|pending-review/) && (
+            <p style={{ fontSize: 12, color: '#8892aa', marginTop: 8 }}>
+              <span style={s.spinner}/>Polling for result…
+            </p>
+          )}
           <ResultCard result={result} />
         </div>
 
@@ -204,6 +207,11 @@ export default function SubmitPage() {
           <button style={s.btn('#7c5cbf')} onClick={submitImage} disabled={submitting || !imageFile}>
             {submitting ? <><span style={s.spinner}/>Uploading…</> : '🚀 Submit Image for Moderation'}
           </button>
+          {polling && !imgResult?.status?.match(/approved|rejected|pending-review/) && (
+            <p style={{ fontSize: 12, color: '#8892aa', marginTop: 8 }}>
+              <span style={s.spinner}/>Polling for result…
+            </p>
+          )}
           <ResultCard result={imgResult} />
         </div>
       </div>
@@ -217,7 +225,7 @@ export default function SubmitPage() {
         picked up by <strong style={{color:'#f59e0b'}}>AI Processing Node (port 3002)</strong> using
         <strong style={{color:'#f59e0b'}}> AWS Rekognition</strong> or <strong style={{color:'#4285f4'}}>Google Perspective API</strong> →
         gray-zone items escalated to <strong style={{color:'#a78bfa'}}>Human Review (port 3003)</strong> →
-        final decisions stored on <strong style={{color:'#65d0a5'}}>IPFS via Infura (port 3004)</strong>.
+        final decisions stored on <strong style={{color:'#65d0a5'}}>IPFS via Pinata (port 3004)</strong>.
         All nodes coordinate via <strong style={{color:'#a78bfa'}}>libp2p GossipSub</strong>.
       </div>
     </div>

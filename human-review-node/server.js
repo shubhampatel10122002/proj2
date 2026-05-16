@@ -21,7 +21,7 @@ const { createNode, publishEvent, subscribeToEvents } = require('../shared/p2pNo
 const app  = express();
 const PORT = config.ports.humanReview;
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // In-memory queue of items awaiting human review
 const pendingReview = new Map();   // contentId → task

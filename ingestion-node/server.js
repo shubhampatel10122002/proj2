@@ -25,7 +25,7 @@ const upload  = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10
 const PORT    = config.ports.ingestion;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 // In-memory state store (replace with Redis/DB in production)
 const submissions = new Map();

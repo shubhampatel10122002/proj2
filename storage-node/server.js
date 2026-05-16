@@ -23,7 +23,7 @@ const { createNode, publishEvent, subscribeToEvents } = require('../shared/p2pNo
 const app  = express();
 const PORT = config.ports.storage;
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // In-memory index of stored records
 const storedRecords = [];

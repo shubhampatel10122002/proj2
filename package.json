@@ -1,0 +1,18 @@
+{
+  "name": "decentralized-moderation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root launcher for the Decentralized AI Content Moderation System",
+  "scripts": {
+    "install:all": "npm --prefix shared install && npm --prefix ingestion-node install && npm --prefix ai-processing-node install && npm --prefix human-review-node install && npm --prefix storage-node install && npm --prefix frontend install",
+    "start:ingestion":  "npm --prefix ingestion-node start",
+    "start:ai":         "npm --prefix ai-processing-node start",
+    "start:human":      "npm --prefix human-review-node start",
+    "start:storage":    "npm --prefix storage-node start",
+    "start:frontend":   "npm --prefix frontend start",
+    "start": "concurrently -n ingest,ai,human,storage,web -c blue,magenta,yellow,cyan,green \"npm:start:ingestion\" \"npm:start:ai\" \"npm:start:human\" \"npm:start:storage\" \"npm:start:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
