@@ -1,4 +1,4 @@
-# ⬡ Decentralized AI Content Moderation System
+# Decentralized AI Content Moderation System
 ### Cloud Computing + Distributed Systems — Academic Project
 
 ---
@@ -35,16 +35,16 @@ and images.
 │  - Receive submissions  │         (all nodes talk          │
 │  - Assign contentId     │          to all nodes via        │
 │  - Push to Azure Queue  │          pub/sub events)         │
-└────────────┬────────────┘                                   │
-             │ Azure Queue: moderation-tasks                   │
-             ▼                                                 │
-┌────────────────────────────┐                                 │
-│  AI Processing Node (3002) │                                 │
-│  - Poll Azure Queue        │                                 │
-│  - AWS Rekognition (image) │                                 │
-│  - Perspective API (text)  │                                 │
-│  - Score & classify        │                                 │
-│  ┌─────────────────────┐   │                                 │
+└────────────┬────────────┘                                  │
+             │ Azure Queue: moderation-tasks                 │
+             ▼                                               │
+┌────────────────────────────┐                               │
+│  AI Processing Node (3002) │                               │
+│  - Poll Azure Queue        │                               │
+│  - AWS Rekognition (image) │                               │
+│  - Perspective API (text)  │                               │
+│  - Score & classify        │                               │
+│  ┌─────────────────────┐   │                                │
 │  │  DECISION LOGIC     │   │                                 │
 │  │  score >= 0.85 ─────┼───┼─► Azure Queue: final-decisions │
 │  │  score <  0.40 ─────┼───┼─► Azure Queue: final-decisions │
@@ -57,11 +57,11 @@ and images.
              ▼                    ▼                             │
 ┌───────────────────┐  ┌──────────────────────┐                │
 │ Storage Node(3004)│  │Human Review Node(3003)│                │
-│ - IPFS via Pinata │  │ - Dashboard API       │                │
-│ - Pin JSON record │  │ - Accept decisions    │                │
-│ - Return CID      │  │ - Forward to storage  │                │
+│ - IPFS via Pinata │  │ - Dashboard API       │               │
+│ - Pin JSON record │  │ - Accept decisions    │               │
+│ - Return CID      │  │ - Forward to storage  │               │
 └───────────────────┘  └──────────────────────┘                │
-             │                    │                             │
+             │                    │                            │
              └────────────────────┴─────────────────►──────────┘
                         libp2p events propagate decisions to all peers
 ```
